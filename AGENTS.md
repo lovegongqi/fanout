@@ -42,6 +42,21 @@
 所以 `f update` 拉的是 fork 自己的 release，不会把本地改动换成上游的。
 `install.sh` / `f.sh` 里的 `REPO` 默认值也改成了 `lovegongqi/fanout`。
 
+## 已提交给上游的 PR
+
+| PR | 内容 | 分支 |
+|---|---|---|
+| byJoey/fanout#31 | feat: SOCKS5 出口订阅 | `feat/socks5-subscription` |
+| byJoey/fanout#32 | fix: 访问路径重启后被随机换掉 | `fix/basepath-empty-persist` |
+| byJoey/fanout#33 | chore: 自更新仓库改成编译时可注入 | `chore/injectable-update-repo` |
+
+提上游的分支**必须从 `origin/main`（上游）拉**，不能带本 fork 的东西：
+- `install.sh` / `f.sh` 的 `REPO` 默认值在 fork 里是 `lovegongqi/fanout`，上游 PR 里保持 `byJoey/fanout`
+- `AGENTS.md` 是本 fork 的项目文档，不进上游 PR
+- PR 里不能出现服务器地址、端口、订阅口令之类的私有信息
+
+上游接受后，fork 的 main 跟上游合并，再把 `REPO` 默认值改回自己的。
+
 ## 构建与测试
 
 本机没装 Go，用 Docker 编译测试：
