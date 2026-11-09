@@ -162,7 +162,7 @@ func TestHandleSocksSubCarriesAlias(t *testing.T) {
 	handleSocksSub(m)(rec, httptest.NewRequest(http.MethodGet,
 		"/socks?token="+tok+"&host=9.9.9.9&target=links", nil))
 	body := rec.Body.String()
-	want := "socks5://foJPuser:pass-JP@9.9.9.9:23011#🇯🇵%20日本%20243"
+	want := "socks5://foJPuser:pass-JP@9.9.9.9:23011#🇯🇵%20日本%20·%20vpn-JP"
 	if !strings.Contains(body, want) {
 		t.Fatalf("订阅里应当带别名片段:\n%s", body)
 	}

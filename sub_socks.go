@@ -54,20 +54,21 @@ func socksSubEntries(m *Manager, host string) []socksSubEntry {
 	return out
 }
 
-// socksEntryName 给出口起个名字。名字要能一眼看出是哪个国家、哪个 IP，
-// 但同一份订阅里不能重名（Clash 之类的客户端按名字索引，重名会互相覆盖）。
+// socksEntryName 给出口起个名字。
+//
+// 跟面板上那一行保持一致："🇺🇸 美国 · vpn584855640"——
+// 国旗加国家，后面跟上 VPN Gate 的节点主机名。节点名能对上节点，
+// 换个节点别名跟着变，一眼能看出这条出口现在走的是哪个节点。
 func socksEntryName(t *Tunnel) string {
 	label := nodeLabel(t.Node)
+	host := strings.TrimSpace(t.Node.HostName)
 	if label == "" {
-		label = t.Node.HostName
+		label = host
 	}
-	if ip := strings.TrimSpace(t.ExitIP); ip != "" {
-		if i := strings.LastIndex(ip, "."); i >= 0 && i+1 < len(ip) {
-			return label + " " + ip[i+1:]
-		}
-		return label + " " + ip
+	if label == "" || host == "" {
+		return label
 	}
-	return label
+	return label + " · " + host
 }
 
 // socksSubNames 保证名字唯一：重名的补上端口号。
