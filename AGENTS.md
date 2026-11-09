@@ -36,6 +36,14 @@
 别名格式和面板上那一行完全一致：国旗 + 国家 + `·` + VPN Gate 节点名。
 `target=clash` 的 YAML 里 `name:` 也是同一套名字。
 
+### v1.4.4 — 出口数量上限做成面板里可改
+
+上限原来只有命令行 `-max`（默认 20），撞上限时新建出口直接报「槽位已满」，
+要调大还得改 systemd 再重启。现在存到 `settings.json` 的 `max_slots`，
+设置面板里能直接改，改完立即生效不用重启。命令行显式给了 `-max` 仍以命令行为准并写回设置。
+取值 1-200（槽位号要塞进 `10.99.<槽位>` 网段）。出口列表计数改成「已用 / 上限」。
+顺带修了一处数据竞争（`pickEveryRegion` 解锁后才读 `m.maxSlots`）。
+
 ### 自更新指向 fork
 
 `updateRepo` 从 `const` 改成 `var`，CI 注入 `-X main.updateRepo=${GITHUB_REPOSITORY}`，
@@ -49,6 +57,7 @@
 | byJoey/fanout#31 | feat: SOCKS5 出口订阅 | `feat/socks5-subscription` |
 | byJoey/fanout#32 | fix: 访问路径重启后被随机换掉 | `fix/basepath-empty-persist` |
 | byJoey/fanout#33 | chore: 自更新仓库改成编译时可注入 | `chore/injectable-update-repo` |
+| byJoey/fanout#34 | feat: 出口数量上限做成面板里可改 | `feat/max-slots-in-settings` |
 
 提上游的分支**必须从 `origin/main`（上游）拉**，不能带本 fork 的东西：
 - `install.sh` / `f.sh` 的 `REPO` 默认值在 fork 里是 `lovegongqi/fanout`，上游 PR 里保持 `byJoey/fanout`
