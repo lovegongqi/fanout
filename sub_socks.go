@@ -174,15 +174,37 @@ func encodeSocksSub(entries []socksSubEntry, target string) string {
 	if target == "clash" {
 		return encodeClashSocks(entries)
 	}
+	names := socksSubNames(entries)
 	links := make([]string, 0, len(entries))
-	for _, e := range entries {
-		links = append(links, socksURL(e.Host, e.Port, SocksCred{User: e.User, Pass: e.Pass}))
+	for i, e := range entries {
+		links = append(links, socksSubURI(e, names[i]))
 	}
 	body := strings.Join(links, "\n")
 	if target == "base64" {
 		return base64.StdEncoding.EncodeToString([]byte(body))
 	}
 	return body
+}
+
+// socksSubURI 拼一条带别名的 socks5:// 地址。
+//
+// socks5:// 这个格式本身没有名字字段，光有它客户端只能显示地址和端口。
+// 惯例是把别名挂在 URI 的片段（# 后面）上，vless://、trojan:// 都是这么带的，
+// 认这个约定的客户端就会拿它当节点名显示。
+func socksSubURI(e socksSubEntry, name string) string {
+	base := socksURL(e.Host, e.Port, SocksCred{User: e.User, Pass: e.Pass})
+	if name == "" {
+		return base
+	}
+	return base + "#" + socksSubEscape(name)
+}
+
+// socksSubEscape 转义别名里会破坏解析的字符。
+//
+// 只动三个：空格（客户端可能按空白切）、#（会被当成片段分隔符）、%（避免歧义）。
+// 国旗 emoji 和中文原样留着，客户端不解码也能正常显示；解码的话也不受影响。
+func socksSubEscape(name string) string {
+	return strings.NewReplacer("%", "%25", " ", "%20", "#", "%23").Replace(name)
 }
 
 // encodeClashSocks 出 Clash / Mihomo 的 YAML 配置。

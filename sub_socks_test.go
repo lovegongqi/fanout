@@ -150,6 +150,34 @@ func TestHandleSocksSubClashTarget(t *testing.T) {
 	}
 }
 
+// socks5:// 这个格式本身没有名字字段，客户端只显示地址和端口。
+// 别名得挂在 URI 的 # 后面，认这个约定的客户端就会拿它当节点名。
+func TestHandleSocksSubCarriesAlias(t *testing.T) {
+	useSettings(t)
+	m := NewManager(20, t.TempDir())
+	m.tunnels[1] = socksSubTunnel(1, 23011, "Japan", "JP", "1.2.3.243")
+	tok, _ := subToken()
+
+	rec := httptest.NewRecorder()
+	handleSocksSub(m)(rec, httptest.NewRequest(http.MethodGet,
+		"/socks?token="+tok+"&host=9.9.9.9&target=links", nil))
+	body := rec.Body.String()
+	want := "socks5://foJPuser:pass-JP@9.9.9.9:23011#🇯🇵%20日本%20243"
+	if !strings.Contains(body, want) {
+		t.Fatalf("订阅里应当带别名片段:\n%s", body)
+	}
+}
+
+// 别名里会破坏解析的字符要转义，国旗和中文原样留着。
+func TestSocksSubEscape(t *testing.T) {
+	if got := socksSubEscape("🇯🇵 日本 243"); got != "🇯🇵%20日本%20243" {
+		t.Fatalf("转义不对: %q", got)
+	}
+	if got := socksSubEscape("a#b%c"); got != "a%23b%25c" {
+		t.Fatalf("转义不对: %q", got)
+	}
+}
+
 func TestHandleSocksSubRejectsUnknownTarget(t *testing.T) {
 	useSettings(t)
 	m := NewManager(20, t.TempDir())
